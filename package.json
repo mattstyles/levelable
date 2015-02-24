@@ -1,0 +1,43 @@
+{
+  "name": "levelable",
+  "version": "0.0.0",
+  "description": "Builds on sublevel and multilevel to expose a leveldb over the network",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rm -rf dist && babel lib --out-dir dist",
+    "watch": "babel --watch lib --out-dir dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mattstyles/levelable.git"
+  },
+  "keywords": [
+    "leveldb",
+    "level",
+    "levelup",
+    "multilevel",
+    "sublevel",
+    "client",
+    "server",
+    "database",
+    "db",
+    "stream"
+  ],
+  "author": "Matt Styles",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/mattstyles/levelable/issues"
+  },
+  "homepage": "https://github.com/mattstyles/levelable",
+  "devDependencies": {
+    "babel": "^4.4.6"
+  },
+  "dependencies": {
+    "eventemitter3": "^0.1.6",
+    "level": "^0.18.0",
+    "level-manifest": "^1.2.0",
+    "level-sublevel": "^6.4.6",
+    "multilevel": "^6.1.0"
+  }
+}
