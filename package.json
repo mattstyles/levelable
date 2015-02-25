@@ -32,9 +32,10 @@
   },
   "homepage": "https://github.com/mattstyles/levelable",
   "devDependencies": {
-    "babel": "^4.4.6"
+    "tape": "^3.5.0"
   },
   "dependencies": {
+    "babel": "^4.4.6",
     "eventemitter3": "^0.1.6",
     "level": "^0.18.0",
     "level-manifest": "^1.2.0",
