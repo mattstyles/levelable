@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rm -rf dist && babel lib --out-dir dist",
     "watch": "babel --watch lib --out-dir dist",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/mocha spec/*.js --ui tdd",
     "pre-publish": "npm run build"
   },
   "repository": {
@@ -32,7 +32,10 @@
   },
   "homepage": "https://github.com/mattstyles/levelable",
   "devDependencies": {
-    "tape": "^3.5.0"
+    "chai": "^2.1.0",
+    "del": "^1.1.1",
+    "mkdirp": "^0.5.0",
+    "mocha": "^2.1.0"
   },
   "dependencies": {
     "babel": "^4.4.6",
