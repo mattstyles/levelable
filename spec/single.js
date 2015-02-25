@@ -126,3 +126,80 @@ suite( 'Creating a server to access the db', function() {
     });
 
 });
+
+
+suite( 'Connect with a client', function() {
+    var level = null;
+    var server = null;
+    var client = null;
+    var socket = null;
+
+    setup( function( done ) {
+        mkdirp( dbpath, function() {
+            level = new Levelable({
+                port: 3000,
+                path: dbpath + 'test.db'
+            });
+            level.listen()
+                .then( ( s ) => {
+                    server = s;
+                    done();
+                });
+        });
+    });
+
+    teardown( function( done ) {
+        if ( socket ) {
+            socket.end();
+        }
+        setImmediate( function() {
+            server.close( function() {
+                client = null;
+                socket = null;
+                level.rootDB.close( function() {
+                    del([ dbpath ], done );
+                });
+            });
+        });
+    });
+
+    test( 'Connecting resolves with socket and client objects', function( done ) {
+        level.connect()
+            .then( ( res ) => {
+                expect( res.client ).to.exist;
+                expect( res.socket ).to.exist;
+                client = res.client;
+                socket = res.socket;
+                done();
+            });
+    });
+
+    test( 'Expects that the client can put data', function( done ) {
+        level.connect()
+            .then( ( res ) => {
+                client = res.client;
+                socket = res.socket;
+                expect( function() {
+                    client.put( 'test', 'foo', function() {
+                        done();
+                    });
+                }).to.not.throw( Error );
+            });
+    });
+
+    test( 'Expects that the client can get data once put', function( done ) {
+        level.connect()
+            .then( ( res ) => {
+                client = res.client;
+                socket = res.socket;
+                expect( function() {
+                    client.put( 'test', 'foo', function() {
+                        client.get( 'test', function( err, res ) {
+                            expect( res ).to.equal( 'foo' );
+                            done();                            
+                        });
+                    });
+                }).to.not.throw( Error );
+            });
+    });
+});
