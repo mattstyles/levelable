@@ -2,6 +2,8 @@
  * Tests running levelable in a single process
  */
 
+var fs = require( 'fs' );
+
 var Levelable = require( '../lib/index' );
 var Level = require( 'level' );
 
@@ -189,6 +191,66 @@ suite( 'Connect with a client', function() {
 
     test( 'Expects that the client can get data once put', function( done ) {
         level.connect()
+            .then( ( res ) => {
+                client = res.client;
+                socket = res.socket;
+                expect( function() {
+                    client.put( 'test', 'foo', function() {
+                        client.get( 'test', function( err, res ) {
+                            expect( res ).to.equal( 'foo' );
+                            done();
+                        });
+                    });
+                }).to.not.throw( Error );
+            });
+    });
+});
+
+
+
+suite( 'Connecting to a remote db with a custom manifest', function() {
+    var level = null;
+    var server = null;
+    var client = null;
+    var socket = null;
+    var manifest = JSON.parse( fs.readFileSync( __dirname + '/fixtures/manifest.json' ) );
+
+    setup( function( done ) {
+        mkdirp( dbpath, function() {
+            level = new Levelable({
+                port: 3000,
+                path: dbpath + 'test.db',
+                sublevels: [
+                    'conf'
+                ]
+            });
+            level.listen()
+                .then( ( s ) => {
+                    server = s;
+                    done();
+                });
+        });
+    });
+
+    teardown( function( done ) {
+        if ( socket ) {
+            socket.end();
+        }
+        setTimeout( function() {
+            server.close( function() {
+                client = null;
+                socket = null;
+                level.rootDB.close( function() {
+                    del([ dbpath ], done );
+                });
+            });
+        }, 500 );
+    });
+
+    test( 'Expects to be able to use a custom manifest to access a sublevel', function( done ) {
+        level.connect( 'conf', {
+            manifest: manifest
+        })
             .then( ( res ) => {
                 client = res.client;
                 socket = res.socket;
