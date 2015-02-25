@@ -1,6 +1,6 @@
 {
   "name": "levelable",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Builds on sublevel and multilevel to expose a leveldb over the network",
   "main": "dist/index.js",
   "scripts": {
