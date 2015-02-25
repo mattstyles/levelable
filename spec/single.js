@@ -2,17 +2,15 @@
  * Tests running levelable in a single process
  */
 
-require( 'babel/register' );
 var Levelable = require( '../lib/index' );
+var Level = require( 'level' );
 
 var mkdirp = require( 'mkdirp' );
 var del = require( 'del' );
 
 var expect = require( 'chai' ).expect;
 
-var dbPath = __dirname + '/.db/';
-mkdirp.sync( dbPath );
-
+var dbpath = __dirname + '/.db/';
 
 
 /**
@@ -44,7 +42,7 @@ suite( 'Instantiating levelable', function() {
         });
 
 
-        expect( level.listen ).to.equal( 3000 );
+        expect( level.location ).to.equal( 3000 );
     });
 
     test( 'Levelable should register the socket to listen at when instantiated', function() {
@@ -52,7 +50,7 @@ suite( 'Instantiating levelable', function() {
             socket: socketPath
         });
 
-        expect( level.listen ).to.equal( socketPath );
+        expect( level.location ).to.equal( socketPath );
     });
 
 });
@@ -60,35 +58,75 @@ suite( 'Instantiating levelable', function() {
 /**
  * Test creating a db
  */
-// test( 'Server creation test', function( t ) {
-//     // t.plan( 1 );
-//
-//     var level = new Levelable({
-//         port: 3000,
-//         path: dbPath + 'test.db'
-//     });
-//
-//     return level.create()
-//         .then( function( server ) {
-//             console.log( 'resolved' );
-//         })
-//         .catch( function( err ) {
-//             console.log( 'hello error', err );
-//         })
-//     //     .then( function( server ) {
-//     //         console.log( 'hello' );
-//     //         // t.equals( server.address().port, 3000 );
-//     //
-//     //         // // Tidy up
-//     //         // del([ dbPath ], function() {
-//     //         //
-//     //         // });
-//     //     });
-//
-//
-//     // setTimeout( function() {
-//     //     t.equals( 1, 1 );
-//     // }, 500 );
-//
-//
-// });
+suite( 'Creating a server to access the db', function() {
+    var levels = [];
+
+    setup( function( done ) {
+        levels = [];
+        mkdirp( dbpath, done );
+    });
+
+    teardown( function( done ) {
+        var closing = levels.map( function( level ) {
+            return new Promise( ( resolve, reject ) => {
+                level.rootDB.close( resolve );
+            });
+        });
+
+        Promise.all( closing )
+            .then( () => {
+                del([ dbpath ], done );
+            });
+
+    });
+
+    test( 'Server should start listening to the specified port', function( done ) {
+        levels.push( new Levelable({
+            port: 3000,
+            path: dbpath + 'test.db'
+        }));
+
+        levels[ 0 ].listen()
+            .then( function( server ) {
+                expect( server.address().port ).to.equal( 3000 );
+                server.close( done );
+            });
+    });
+
+
+    test( 'Multiple servers should be created', function( done ) {
+        levels.push( new Levelable({
+            port: 3000,
+            path: dbpath + 'test.db',
+        }));
+
+        levels.push( new Levelable({
+            port: 3001,
+            path: dbpath + 'test1.db',
+        }));
+
+
+
+        var tests = levels.map( function( level ) {
+            return new Promise( ( resolve, reject ) => {
+                level.listen()
+                    .then( function( server ) {
+                        expect( server ).to.exist;
+                        server.close( resolve );
+                    })
+                    .catch( function( err ) {
+                        reject( err );
+                    });
+            });
+        });
+
+
+
+        Promise.all( tests )
+            .then( () => {
+                done();
+            })
+            .catch( done );
+    });
+
+});
