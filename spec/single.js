@@ -105,8 +105,6 @@ suite( 'Creating a server to access the db', function() {
             path: dbpath + 'test1.db',
         }));
 
-
-
         var tests = levels.map( function( level ) {
             return new Promise( ( resolve, reject ) => {
                 level.listen()
@@ -119,8 +117,6 @@ suite( 'Creating a server to access the db', function() {
                     });
             });
         });
-
-
 
         Promise.all( tests )
             .then( () => {
