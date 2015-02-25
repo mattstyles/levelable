@@ -152,7 +152,7 @@ suite( 'Connect with a client', function() {
         if ( socket ) {
             socket.end();
         }
-        setImmediate( function() {
+        setTimeout( function() {
             server.close( function() {
                 client = null;
                 socket = null;
@@ -160,7 +160,7 @@ suite( 'Connect with a client', function() {
                     del([ dbpath ], done );
                 });
             });
-        });
+        }, 500 );
     });
 
     test( 'Connecting resolves with socket and client objects', function( done ) {
@@ -196,7 +196,7 @@ suite( 'Connect with a client', function() {
                     client.put( 'test', 'foo', function() {
                         client.get( 'test', function( err, res ) {
                             expect( res ).to.equal( 'foo' );
-                            done();                            
+                            done();
                         });
                     });
                 }).to.not.throw( Error );

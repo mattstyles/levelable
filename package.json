@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rm -rf dist && babel lib --out-dir dist",
     "watch": "babel --watch lib --out-dir dist",
-    "test": "./node_modules/.bin/mocha spec/index.js --ui tdd -R nyan",
+    "test": "./node_modules/.bin/mocha spec/index.js --ui tdd -R spec",
     "pre-publish": "npm run build"
   },
   "repository": {
