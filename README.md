@@ -1,4 +1,4 @@
-# levelable [![Build Status](https://travis-ci.org/mattstyles/levelable.svg?branch=master)](https://travis-ci.org/mattstyles/levelable) [Dependencies](https://david-dm.org/mattstyles/levelable.svg)
+# levelable [![Build Status](https://travis-ci.org/mattstyles/levelable.svg?branch=master)](https://travis-ci.org/mattstyles/levelable) ![Dependencies](https://david-dm.org/mattstyles/levelable.svg)
 
 > Builds on sublevel and multilevel to expose a leveldb over the network
 
