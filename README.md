@@ -71,9 +71,13 @@ There’s a modest set of tests so feel free to hack away, use `npm test` to run
 ```
 
 `port` the port to listen at, either _socket_ or _port_ is required
+
 `socket` the socket address, either _socket_ or _port_ is required
+
 `db` a leveldb instance, e.g. new Level() or Sublevel()
+
 `path` the location on disk of the db, unnecessary if the db is passed in but is used to find the manifest
+
 `sublevels` array of sublevels in the db
 
 Multilevel uses a manifest file to ensure consistency when plugins (such as sublevel) extend the levelup api and levelable uses the `path` option to find this manifest. For accessing the root database the manifest is unnecessary, otherwise you would need the manifest created by the server, or path to an identical manifest, or pass a manifest when attempting to connect.

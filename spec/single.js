@@ -107,16 +107,18 @@ suite( 'Creating a server to access the db', function() {
             path: dbpath + 'test1.db',
         }));
 
-        var tests = levels.map( function( level ) {
+        var tests = levels.map( function( level, index ) {
             return new Promise( ( resolve, reject ) => {
-                level.listen()
-                    .then( function( server ) {
-                        expect( server ).to.exist;
-                        server.close( resolve );
-                    })
-                    .catch( function( err ) {
-                        reject( err );
-                    });
+                setTimeout( () => {
+                    level.listen()
+                        .then( function( server ) {
+                            expect( server ).to.exist;
+                            server.close( resolve );
+                        })
+                        .catch( function( err ) {
+                            reject( err );
+                        });
+                }, index * 200 );
             });
         });
 
@@ -263,5 +265,140 @@ suite( 'Connecting to a remote db with a custom manifest', function() {
                     });
                 }).to.not.throw( Error );
             });
+    });
+});
+
+
+
+suite( 'Connecting multiple remotes to a levelable process', function() {
+    var levelMaster = null;
+    var levelRemotes = [];
+    var server = null;
+    var manifest = JSON.parse( fs.readFileSync( __dirname + '/fixtures/manifest.json' ) );
+
+
+    suiteSetup( function( done ) {
+        mkdirp( dbpath, function() {
+            levelMaster = new Levelable({
+                port: 3000,
+                path: dbpath + 'test.db',
+                sublevels: [
+                    'conf'
+                ]
+            });
+            levelMaster.listen()
+                .then( ( s ) => {
+                    server = s;
+                    done();
+                });
+
+            levelRemotes.push( new Levelable({
+                port: 3000
+            }));
+            levelRemotes.push( new Levelable({
+                port: 3000
+            }));
+        });
+    });
+
+    suiteTeardown( function( done ) {
+        setTimeout( function() {
+            server.close( function() {
+                levelMaster.rootDB.close( function() {
+                    del([ dbpath ], done );
+                });
+            });
+        }, 500 );
+    });
+
+    function put( con ) {
+        return new Promise( ( resolve, reject ) => {
+            con.client.put( 'test', 'foo', ( err ) => {
+                if ( err ) {
+                    reject( err );
+                    return;
+                }
+                resolve( con );
+            });
+        });
+    }
+
+    function get( con ) {
+        return new Promise( ( resolve, reject ) => {
+            con.client.get( 'test', ( err, res ) => {
+                if ( err ) {
+                    reject( err );
+                    return;
+                }
+                expect( res ).to.equal( 'foo' );
+                resolve( con );
+            });
+        });
+    }
+
+    function tidy( con ) {
+        return new Promise( ( resolve, reject ) => {
+            con.socket.end();
+            con.client.close( function( err ) {
+                if ( err ) {
+                    reject( err );
+                    return;
+                }
+                resolve( con );
+            });
+        });
+    }
+
+    function startStagger( num ) {
+        return new Promise( ( resolve, reject ) => {
+            // Introduce some delay so the remotes dont fire at once
+            setTimeout( () => {
+                levelRemotes[ num ].connect( 'conf', {
+                    manifest: manifest
+                })
+                    .then( put )
+                    .then( get )
+                    .then( tidy )
+                    .then( resolve )
+                    .catch( reject );
+            }, num * 200 );
+        });
+    }
+
+    function startConcurrent( num ) {
+        return new Promise( ( resolve, reject ) => {
+            levelRemotes[ num ].connect( 'conf', {
+                manifest: manifest
+            })
+                .then( put )
+                .then( get )
+                .then( tidy )
+                .then( resolve )
+                .catch( reject );
+        });
+    }
+
+    test( 'Expects that multiple remotes can connect and put and get data', function( done ) {
+        var promises = levelRemotes.map( function( remote, index ) {
+            return startStagger( index );
+        });
+
+        Promise.all( promises )
+            .then( () => {
+                done();
+            })
+            .catch( done );
+    });
+
+    test( 'Expects that multiple remotes can connect and put and get data concurrently', function( done ) {
+        var promises = levelRemotes.map( function( remote, index ) {
+            return startConcurrent( index );
+        });
+
+        Promise.all( promises )
+            .then( () => {
+                done();
+            })
+            .catch( done );
     });
 });

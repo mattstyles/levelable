@@ -99,7 +99,7 @@
       },
       "sublevels": {}
     },
-    "mysub": {
+    "conf": {
       "methods": {
         "createReadStream": {
           "type": "readable"
