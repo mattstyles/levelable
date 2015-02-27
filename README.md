@@ -63,6 +63,7 @@ There’s a modest set of tests so feel free to hack away, use `npm test` to run
 ```
 {
     port: <Number>::?optional,
+    host: <String>::?optional
     socket: <String>::?optional,
     db: <Level>::optional,
     path: <String>::?optional,
@@ -71,6 +72,8 @@ There’s a modest set of tests so feel free to hack away, use `npm test` to run
 ```
 
 `port` the port to listen at, either _socket_ or _port_ is required
+
+`host` the host to listen at, defaults to `localhost`
 
 `socket` the socket address, either _socket_ or _port_ is required
 
